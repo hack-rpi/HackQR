@@ -10,6 +10,7 @@ namespace UtilUnitTest
 
   extern size_t runAll();
   extern size_t runBinary();
+  extern size_t runGaloisField();
 
 }
 

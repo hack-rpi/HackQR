@@ -3,7 +3,8 @@
 
 namespace util
 {
-  // =============================================================================
+  
+  // ===========================================================================
   // Binary Class Implementation
 
   Binary::Binary(){
@@ -87,4 +88,54 @@ namespace util
     }
     return string_representation;
   }
+  
+  // ===========================================================================
+  // Galois Field Implementation
+  GaloisField::GaloisField(size_t size, size_t modulus) {
+    size_ = size;
+    modulus_ = modulus;
+    members_ = std::vector<GF_int*>(size_, NULL);
+    size_t val = 1;
+    for (size_t n=0; n<size_; n++) {
+      members_[n] = new GF_int(n, val, this);
+      val *= 2;
+      if (val >= size_) {
+        val = val ^ modulus_;
+      }
+    }
+  }
+  
+  GaloisField::~GaloisField() {
+    for (size_t n=0; n<size_; n++) {
+      delete members_[n];
+    }
+  }
+  
+  GF_int* GaloisField::operator[](const size_t n) {
+    return members_[n];
+  }
+  
+  GF_int::GF_int(size_t n, size_t val, GaloisField* field) {
+    n_ = n;
+    value_ = val;
+    field_ = field;
+  }
+  
+  size_t GF_int::getN() {
+    return n_;
+  }
+  
+  size_t GF_int::getValue() {
+    return value_;
+  }
+  
+  GF_int GF_int::operator^(const GF_int& b) const {
+    
+  }
+  
+  GF_int* GF_int::operator*(const GF_int& b) const {
+    size_t new_n = (this->n_ + b.n_) % (this->field_->size_ - 1);
+    return this->field_->members_[new_n];
+  }
+  
 }

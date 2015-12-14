@@ -6,7 +6,7 @@
 
 void usage(char* fn) {
   std::cerr << fn << " [test name]" << std::endl;
-  std::cerr << "\t Tests: image qr" << std::endl;
+  std::cerr << "\t Tests: image qr util" << std::endl;
 }
 
 int main(int argc, char** argv) {

@@ -51,8 +51,8 @@ namespace util
     GaloisField(size_t size, size_t modulus);
     ~GaloisField();
     
-    GF_int* log(const size_t n);
-    GF_int* antilog(const size_t n);    
+    GF_int* log(const size_t n) const;
+    GF_int* antilog(const size_t n) const;
   
   private:
     size_t size_;

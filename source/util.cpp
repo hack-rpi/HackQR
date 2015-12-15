@@ -113,12 +113,12 @@ namespace util
     }
   }
   
-  GF_int* GaloisField::log(const size_t n) {
+  GF_int* GaloisField::log(const size_t n) const {
     return log_table_[n];
   }
   
-  GF_int* GaloisField::antilog(const size_t n) {
-    return antilog_table_[n];
+  GF_int* GaloisField::antilog(const size_t n) const {
+    return antilog_table_.at(n);
   }
   
   GF_int::GF_int(size_t n, size_t val, GaloisField* field) {

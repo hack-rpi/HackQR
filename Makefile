@@ -1,4 +1,4 @@
-OBJS = image.o qr.o util.o
+OBJS = image.o util.o
 MAIN_OBJS = $(OBJS) main.o
 TEST_OBJS = $(OBJS) test_main.o test_image.o test_qr.o test_util.o
 CPPFLAGS = -std=c++11
@@ -21,9 +21,6 @@ bin/main.o : source/main.cpp | $(BIN_DIR)
 bin/image.o  : $(addprefix source/, image.cpp image.h) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
-bin/qr.o  : $(addprefix source/, qr.cpp qr.h) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
-
 bin/util.o  : $(addprefix source/, util.cpp util.h) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
@@ -38,7 +35,7 @@ bin/test_main.o : test/main.cpp | $(BIN_DIR)
 bin/test_image.o : test/image.cpp $(addprefix source/, image.cpp image.h) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
-bin/test_qr.o : test/qr.cpp $(addprefix source/, qr.cpp qr.h) | $(BIN_DIR)
+bin/test_qr.o : test/qr.cpp source/qr.hpp | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
 bin/test_util.o : test/util.cpp $(addprefix source/, util.cpp util.h) | $(BIN_DIR)

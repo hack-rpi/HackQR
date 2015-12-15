@@ -35,13 +35,13 @@ $(BIN_DIR)$(TEST_NAME): $(addprefix $(BIN_DIR), $(TEST_OBJS))
 bin/test_main.o : test/main.cpp | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
-bin/test_image.o : test/image.cpp | $(BIN_DIR)
+bin/test_image.o : test/image.cpp $(addprefix source/, image.cpp image.h) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
-bin/test_qr.o : test/qr.cpp | $(BIN_DIR)
+bin/test_qr.o : test/qr.cpp $(addprefix source/, qr.cpp qr.h) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
-bin/test_util.o : test/util.cpp | $(BIN_DIR)
+bin/test_util.o : test/util.cpp $(addprefix source/, util.cpp util.h) | $(BIN_DIR)
 		$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -Isrc/
 
 clean:

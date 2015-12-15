@@ -1,5 +1,4 @@
 #include "util.h"
-#include <iostream>
 
 namespace util
 {
@@ -94,31 +93,44 @@ namespace util
   GaloisField::GaloisField(size_t size, size_t modulus) {
     size_ = size;
     modulus_ = modulus;
-    members_ = std::vector<GF_int*>(size_, NULL);
+    log_table_ = std::vector<GF_int*>(size_, NULL);
     size_t val = 1;
     for (size_t n=0; n<size_; n++) {
-      members_[n] = new GF_int(n, val, this);
+      GF_int* gf_int = new GF_int(n, val, this);
+      log_table_[n] = gf_int;
+      antilog_table_[val] = gf_int;
       val *= 2;
       if (val >= size_) {
         val = val ^ modulus_;
       }
     }
+    antilog_table_[1] = log_table_[0];
   }
   
   GaloisField::~GaloisField() {
     for (size_t n=0; n<size_; n++) {
-      delete members_[n];
+      delete log_table_[n];
     }
   }
   
-  GF_int* GaloisField::operator[](const size_t n) {
-    return members_[n];
+  GF_int* GaloisField::log(const size_t n) {
+    return log_table_[n];
+  }
+  
+  GF_int* GaloisField::antilog(const size_t n) {
+    return antilog_table_[n];
   }
   
   GF_int::GF_int(size_t n, size_t val, GaloisField* field) {
     n_ = n;
     value_ = val;
     field_ = field;
+  }
+  
+  GF_int::GF_int() {
+    n_ = -1;
+    value_ = -1;
+    field_ = NULL;
   }
   
   size_t GF_int::getN() {
@@ -129,13 +141,17 @@ namespace util
     return value_;
   }
   
-  GF_int GF_int::operator^(const GF_int& b) const {
-    
+  GF_int operator*(const GF_int& a, const GF_int& b) {
+    size_t new_n = (a.n_ + b.n_) % (a.field_->size_ - 1);
+    return *a.field_->log_table_[new_n];
   }
   
-  GF_int* GF_int::operator*(const GF_int& b) const {
-    size_t new_n = (this->n_ + b.n_) % (this->field_->size_ - 1);
-    return this->field_->members_[new_n];
+  GF_int operator^(const GF_int& a, const GF_int& b) {
+    return *a.field_->antilog_table_[ a.value_ ^ b.value_ ];
+  }
+  
+  GF_int operator+(const GF_int& a, const GF_int& b) {
+    return a ^ b;
   }
   
 }

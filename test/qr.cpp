@@ -7,6 +7,7 @@ namespace QRUnitTests
     std::cout << "Running all QR Unit Tests..." << std::endl;
     runAlphanumeric();
     runGenerator();
+    runEncoder();
     return 0;
   }
   
@@ -15,6 +16,14 @@ namespace QRUnitTests
     Alphanumeric a(m, 1);
     std::cout << a.getLength() << std::endl;
     std::cout << a.getMessage() << std::endl;
+    
+    std::vector<util::Binary> encoding = a.getEncodedMessage();
+    for (size_t b=0; b<encoding.size(); b++) {
+      std::cout << encoding[b].getString() << ' ';
+    }
+    std::cout << std::endl;
+    
+    return 0;
   }
   
   size_t runGenerator() {
@@ -48,6 +57,16 @@ namespace QRUnitTests
         << (i < g7.size()-1 ? " + " : ")");
     std::cout << std::endl;
     
+    return 0; 
+  }
+  
+  size_t runEncoder() {
+    QR<Alphanumeric> qr('Q', '1');    
+    std::string m = "HELLO WORLD";
+    Alphanumeric a(m, 1);
+    qr.Encode(a);
+    
+    return 0;
   }
   
 }

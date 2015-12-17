@@ -13,6 +13,7 @@ namespace QRUnitTests
   extern size_t runAll();
   extern size_t runAlphanumeric();
   extern size_t runGenerator();
+  extern size_t runEncoder();
   
 }
 

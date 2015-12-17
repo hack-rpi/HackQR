@@ -2,7 +2,7 @@
 
 namespace util
 {
-  
+
   // ===========================================================================
   // Binary Class Implementation
 
@@ -16,9 +16,21 @@ namespace util
     integer_value_ = computeInteger(str_value);
   }
 
+  Binary::Binary(const std::string& str_value, const size_t binaryLength) {
+    string_value_ = str_value;
+    integer_value_ = computeInteger(str_value);
+    this->addLeftPadding(binaryLength - string_value_.length());
+  }
+
   Binary::Binary(size_t int_val) {
     string_value_ = computeString(int_val);
     integer_value_ = int_val;
+  }
+
+  Binary::Binary(const size_t int_value, const size_t binaryLength) {
+    string_value_ = computeString(int_value);
+    integer_value_ = int_value;
+    this->addLeftPadding(binaryLength - string_value_.length());
   }
 
   std::string Binary::getString() const{
@@ -38,12 +50,19 @@ namespace util
   }
 
   void Binary::operator+=(const Binary& cBinary) {
+    size_t length1 = this->getString().length();
+    size_t length2 = cBinary.getString().length();
+    size_t maxLength = (length1>length2) ? length1 : length2;
     this->integer_value_ += cBinary.getInt();
     string_value_ = computeString(this->integer_value_);
+    this->addLeftPadding(maxLength - string_value_.length());
   }
 
   Binary Binary::operator+(const Binary& b){
-    return Binary(this->integer_value_ + b.getInt());
+    size_t length1 = this->getString().length();
+    size_t length2 = b.getString().length();
+    size_t maxLength = (length1>length2) ? length1 : length2;
+    return Binary(this->integer_value_ + b.getInt(), maxLength);
   }
 
   size_t Binary::computeInteger(const std::string& str_value) const {
@@ -87,7 +106,7 @@ namespace util
     }
     return string_representation;
   }
-  
+
   // ===========================================================================
   // Galois Field Implementation
   GaloisField::GaloisField(size_t size, size_t modulus) {
@@ -106,52 +125,52 @@ namespace util
     }
     antilog_table_[1] = log_table_[0];
   }
-  
+
   GaloisField::~GaloisField() {
     for (size_t n=0; n<size_; n++) {
       delete log_table_[n];
     }
   }
-  
+
   GF_int* GaloisField::log(const size_t n) const {
     return log_table_[n];
   }
-  
+
   GF_int* GaloisField::antilog(const size_t n) const {
     return antilog_table_.at(n);
   }
-  
+
   GF_int::GF_int(size_t n, size_t val, GaloisField* field) {
     n_ = n;
     value_ = val;
     field_ = field;
   }
-  
+
   GF_int::GF_int() {
     n_ = -1;
     value_ = -1;
     field_ = NULL;
   }
-  
+
   size_t GF_int::getN() {
     return n_;
   }
-  
+
   size_t GF_int::getValue() {
     return value_;
   }
-  
+
   GF_int operator*(const GF_int& a, const GF_int& b) {
     size_t new_n = (a.n_ + b.n_) % (a.field_->size_ - 1);
     return *a.field_->log_table_[new_n];
   }
-  
+
   GF_int operator^(const GF_int& a, const GF_int& b) {
     return *a.field_->antilog_table_[ a.value_ ^ b.value_ ];
   }
-  
+
   GF_int operator+(const GF_int& a, const GF_int& b) {
     return a ^ b;
   }
-  
+
 }

@@ -83,28 +83,18 @@ namespace util
     return total;
   }
   std::string Binary::computeString(size_t int_value) const {
-    size_t startingBase = 1;
-    std::string string_representation = "";
-    //Covering base case
-    if (int_value == 0) {
-      string_representation += '0';
-    }
-    else {
-      //Finding the base to start the binary number at
-      while (startingBase * 2 < int_value) {
-        startingBase *= 2;
+    size_t tmp = int_value;
+    std::string r_result = "", result = "";
+    while (tmp > 0) {
+      if (tmp % 2 == 1) {
+        r_result += '1';
+      } else {
+        r_result += '0';
       }
-      while (startingBase > 0){
-        if (startingBase <= int_value) {
-          string_representation += '1';
-          int_value -= startingBase;
-        } else {
-          string_representation += '0';
-        }
-        startingBase /= 2;
-      }
+      tmp /= 2;
     }
-    return string_representation;
+    for (int i=r_result.size()-1; i>=0; result += r_result[i], i--);
+    return result;
   }
 
   // ===========================================================================

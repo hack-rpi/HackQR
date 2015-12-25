@@ -12,6 +12,22 @@ namespace UtilUnitTest
   }
 
   size_t runBinary() {
+    
+    util::Binary a1(1);
+    std::cout << a1.getString() << " == " << "1" << std::endl;
+    
+    util::Binary a2(2);
+    std::cout << a2.getString() << " == " << "10" << std::endl;
+    
+    util::Binary a3(3);
+    std::cout << a3.getString() << " == " << "11" << std::endl;
+    
+    util::Binary a4(4);
+    std::cout << a4.getString() << " == " << "100" << std::endl;
+    
+    util::Binary a12(12);
+    std::cout << a12.getString() << " == " << "1100" << std::endl;
+    
     std::string m = "001100";
     size_t m2 = 12;
     util::Binary a(m);
@@ -116,6 +132,13 @@ namespace UtilUnitTest
     std::cout << "n0 + n1" << std::endl;
     std::cout << '\t' << n25_.getN() << " == " << 25 << std::endl;
     std::cout << '\t' << n25_.getValue() << " == " << 3 << std::endl;
+    
+    util::GF_int n233_ = *gf.antilog(236) ^ *gf.antilog(5);
+    std::cout << "236 ^ 5" << std::endl;
+    std::cout << '\t' << n233_.getN() << " == " << 233 << std::endl;
+    std::cout << '\t' << n233_.getValue() << " == " << '?' << std::endl;
+
+    std::cout << (236 ^ 5) << std::endl;
 
     return 0;
   }

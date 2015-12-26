@@ -61,7 +61,7 @@ namespace QRUnitTests
   }
   
   size_t runEncoder() {
-    QR<Alphanumeric> qr('Q', '1');    
+    QR<Alphanumeric> qr('M', '1');    
     std::string m = "HELLO WORLD";
     Alphanumeric a(m, 1);
     qr.Encode(a);

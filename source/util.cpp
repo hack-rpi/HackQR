@@ -113,6 +113,7 @@ namespace util
         val = val ^ modulus_;
       }
     }
+    antilog_table_[0] = new GF_int(0, 0, this);
     antilog_table_[1] = log_table_[0];
   }
 

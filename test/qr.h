@@ -4,7 +4,8 @@
 #include <iostream>
 #include <vector>
 
-#include "./../source/qr.hpp"
+#include "./../source/encoding.h"
+#include "./../source/qr.h"
 #include "./../source/util.h"
 
 namespace QRUnitTests 

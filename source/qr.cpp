@@ -3,6 +3,9 @@
 QR::QR(const char EC, const int version) {
   ec_level_ = EC;
   version_ = version;
+  size_t size = ((version_ - 1) * 4) + 21;
+  image_.Allocate(size, size);
+  image_.SetAllPixels(false);
 };
 
 QR::~QR() {};
@@ -77,8 +80,17 @@ void QR::Encode(const EncodingScheme& encoding) {
   size_t r_bits = REMAINDER_BITS_.at(version_);
   if (r_bits > 0) 
     encoded_data_.push_back(util::Binary("0", r_bits));
-}
   
+  // create the QR bitmap
+  createBitmap();
+}
+
+void QR::Save(const std::string& filename) const {
+  image_.Save(filename);
+}
+
+// =============================================================================
+
 std::vector<util::GF_int> QR::getGenerator(size_t n) const {
   if (n == 1) {
     std::vector<util::GF_int> result;
@@ -179,6 +191,124 @@ std::vector<util::Binary> QR::getErrorCorrectionWords(
   }
   return ec_words;
 }
+ 
+void QR::createBitmap() {
+  Image<bool> set_pixels;
+  set_pixels.Allocate(image_.Width(), image_.Height());
+  set_pixels.SetAllPixels(false);
+  drawFunctionPatterns(image_, set_pixels);
+  return;
+}
+
+void QR::drawFunctionPatterns(Image<bool>& image, Image<bool>& set_pixels) 
+    const {
+  auto drawFinderPattern = [&image, &set_pixels](int x, int y) -> void {
+    for (int a=x; a<x+7; a++) {
+      for (int b=y; b>y-7; b--) {
+        if ((a > x && a < x + 6 && (b == y - 1 || b == y - 5)) || 
+            (b < y && b > y - 6 && (a == x + 1 || a == x + 5))) {
+          image.SetPixel(a, b, false);
+        } else {
+          image.SetPixel(a, b, true);
+        }
+        set_pixels.SetPixel(a, b, true);
+      }
+    }
+  };
+  
+  auto drawHLine = [&image, &set_pixels](int x0, int n, int y, bool val) 
+      -> void {
+    for (int a=x0; a<x0+n; a++) {
+      image.SetPixel(a, y, val);
+      set_pixels.SetPixel(a, y, true);
+    }
+  };
+  
+  auto drawVLine = [&image, &set_pixels](int y0, int n, int x, bool val) 
+      -> void {
+    for (int b=y0; b<y0+n; b++) {
+      image.SetPixel(x, b, val);
+      set_pixels.SetPixel(x, b, true);
+    }
+  };
+  
+  auto drawAlignmentPattern = [&image, &set_pixels](int x, int y) -> void {
+    for (int a=x; a<x+5; a++) {
+      for (int b=y; b>y-5; b--) {
+        if (a == x || b == y || a == x + 4 || b == y - 4 || 
+            (a == x + 2 && b == y - 2)) {
+          image.SetPixel(a, b, true);
+        } else {
+          image.SetPixel(a, b, false);
+        }
+        set_pixels.SetPixel(a, b, true);
+      }
+    }
+  };
+  
+  // draw the finder patterns
+  drawFinderPattern(0, image.Height() - 1);
+  drawFinderPattern(0, 6);
+  drawFinderPattern(image.Width() - 7, image.Height() - 1);
+  
+  // draw the separators
+  drawHLine(0, 8, 7, false);
+  drawVLine(0, 8, 7, false);
+  drawHLine(0, 8, image.Height() - 8, false);
+  drawVLine(image.Height() - 8, 8, 7, false);
+  drawHLine(image.Width() - 8, 8, image.Height() - 8, false);
+  drawVLine(image.Height() - 8, 8, image.Width() - 8, false);
+  
+  // draw the alignment patterns
+  if (version_ > 1) {
+    std::vector<int> locs = ALIGNMENT_LOCS_.at(version_);
+    for (size_t i=0; i<locs.size(); i++) {
+      for (size_t k=0; k<locs.size(); k++) {
+        if (! set_pixels.GetPixel(locs[i], image.Height() - locs[k] - 1))
+          drawAlignmentPattern(locs[i] - 2, image.Height() - locs[k] - 1 + 2);
+      }
+    }
+  }
+  
+  // draw the timing patterns
+  bool val = true;
+  for (size_t a=6; a<image.Width()-8; a++) {
+    image.SetPixel(a, image.Height() - 7, val);
+    val = !val;
+    set_pixels.SetPixel(a, image.Height() - 7, val);
+  }
+  val = true;
+  for (size_t b=6; b<image.Height()-8; b++) {
+    image.SetPixel(6, b, val);
+    val = !val;
+    set_pixels.SetPixel(6, b, true);
+  }
+  
+  // draw the dark module
+  image.SetPixel(8, 7, true);
+  set_pixels.SetPixel(8, 7, true);
+  
+  // mark the reserved areas
+  if (version_ < 7) {
+    drawVLine(0, 7, 8, false);
+    drawHLine(image.Width() - 7, 7, image.Height() - 9, false);
+    drawHLine(0, 6, image.Height() - 9, false);
+    drawHLine(7, 2, image.Height() - 9, false);
+    drawVLine(image.Height() - 6, 6, 8, false);
+    drawVLine(image.Height() - 8, 1, 8, false);
+  } else {
+    drawHLine(0, 6, 8, false);
+    drawHLine(0, 6, 9, false);
+    drawHLine(0, 6, 10, false);
+    drawVLine(image.Height() - 6, 6, image.Width() - 9, false);
+    drawVLine(image.Height() - 6, 6, image.Width() - 10, false);
+    drawVLine(image.Height() - 6, 6, image.Width() - 11, false);
+  }
+  
+  return;
+}
+  
+ // ============================================================================
   
 size_t QR::getTotalCodewords() const {
   char buf[50];

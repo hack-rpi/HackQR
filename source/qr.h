@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "encoding.h"
+#include "image.h"
 #include "util.h"
 
 // =============================================================================
@@ -21,6 +22,9 @@ public:
   
   // Modifiers
   void Encode(const EncodingScheme& encoding);
+  
+  // Accessors
+  void Save(const std::string& filename) const;
 
 private:
   // Static Constants
@@ -29,11 +33,13 @@ private:
   const static util::Binary PAD_BYTES2_;
   const static std::map<std::string, std::string> EC_CODEWORDS_;
   const static std::map<int, size_t> REMAINDER_BITS_;
+  const static std::map<int, std::vector<int> > ALIGNMENT_LOCS_;
   
   // Representation
   char ec_level_;
   int version_;
   std::vector<util::Binary> encoded_data_;
+  Image<bool> image_;
   
   // Helper Functions
   std::vector<util::GF_int> getGenerator(size_t n) const;
@@ -42,6 +48,9 @@ private:
   std::vector<util::Binary> getErrorCorrectionWords(
     const size_t& total_ec_words, 
     const std::vector<util::Binary>& data_words) const;
+  
+  void createBitmap();
+  void drawFunctionPatterns(Image<bool>& image, Image<bool>& set_pixels) const;
   
   // Constant Static Accessors
   size_t getTotalCodewords() const;

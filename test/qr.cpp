@@ -31,14 +31,22 @@ namespace QRUnitTests
   }
   
   size_t runEncoder() {
-    QR qr1('M', 1);
     std::string m = "HELLO WORLD";
+    
+    QR qr1('M', 1);
     Alphanumeric a(m, 1);
     qr1.Encode(a);
+    qr1.Save("qr1.pbm");
     
-    QR qr2('Q', 10);
-    Alphanumeric b(m, 10);
+    QR qr2('Q', 2);
+    Alphanumeric b(m, 2);
     qr2.Encode(b);
+    qr2.Save("qr2.pbm");
+    
+    QR qr3('Q', 8);
+    Alphanumeric c(m, 8);
+    qr3.Encode(c);
+    qr3.Save("qr3.pbm");
     
     return 0;
   }

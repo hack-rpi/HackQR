@@ -253,3 +253,54 @@ const std::map<int, std::vector<int> > QR::ALIGNMENT_LOCS_ = {
   {39, {6, 26, 54, 82, 110, 138, 166}},
   {40, {6, 30, 58, 86, 114, 142, 170}}
 };
+
+const bool QR::MASK_RULE_0_(size_t x, size_t y) {
+  return (x + y) % 2 == 0;
+}
+
+const bool QR::MASK_RULE_1_(size_t x, size_t y) {
+  return y % 2 == 0;
+}
+
+const bool QR::MASK_RULE_2_(size_t x, size_t y) {
+  return x % 3 == 0;
+}
+
+const bool QR::MASK_RULE_3_(size_t x, size_t y) {
+  return (x + y) % 3 == 0;
+}
+
+const bool QR::MASK_RULE_4_(size_t x, size_t y) {
+  return ( y/2 + x/3 ) % 2 == 0;
+}
+
+const bool QR::MASK_RULE_5_(size_t x, size_t y) {
+  return ((x * y) % 2) + ((x * y) % 3) == 0;
+}
+
+const bool QR::MASK_RULE_6_(size_t x, size_t y) {
+  return (((x * y) % 2) + ((x * y) % 3) % 2) == 0;
+}
+
+const bool QR::MASK_RULE_7_(size_t x, size_t y) {
+  return (((x + y) % 2) + ((x * y) % 3) % 2) == 0;
+}
+
+const std::vector<const bool (*)(size_t, size_t)> QR::MASKS_ = {
+  QR::MASK_RULE_0_,
+  QR::MASK_RULE_1_,
+  QR::MASK_RULE_2_,
+  QR::MASK_RULE_3_,
+  QR::MASK_RULE_4_,
+  QR::MASK_RULE_5_,
+  QR::MASK_RULE_6_,
+  QR::MASK_RULE_7_
+};
+
+const std::vector<bool> QR::BAD_PATTERN_0_ = {
+  true, false, true, true, true, false, true, false, false, false, false
+};
+
+const std::vector<bool> QR::BAD_PATTERN_1_ = {
+  false, false, false, false, true, false, true, true, true, false, true
+};

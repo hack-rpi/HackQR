@@ -187,7 +187,7 @@ std::vector<util::Binary> QR::getErrorCorrectionWords(
     tmp3.clear();
   } // end error correction word gen
   for (size_t i=0; i<tmp.size(); i++) {
-    ec_words[i] = util::Binary( tmp[i].getValue() );
+    ec_words[i] = util::Binary( tmp[i].getValue(), 8 );
   }
   return ec_words;
 }
@@ -197,6 +197,20 @@ void QR::createBitmap() {
   set_pixels.Allocate(image_.Width(), image_.Height());
   set_pixels.SetAllPixels(false);
   drawFunctionPatterns(image_, set_pixels);
+  
+  std::cout << encoded_data_.size() * 8 << " ?= ";
+  
+  size_t count = 0;
+  for (size_t x=0; x<image_.Width(); x++) {
+    for (size_t y=0; y<image_.Height(); y++) {
+      if (! set_pixels.GetPixel(x,y))
+        count++;
+    }
+  }
+  std:: cout << count << std::endl;
+  
+  drawEncodedData(image_, set_pixels);
+  applyMaskPattern(image_, set_pixels);
   return;
 }
 
@@ -275,7 +289,7 @@ void QR::drawFunctionPatterns(Image<bool>& image, Image<bool>& set_pixels)
   for (size_t a=6; a<image.Width()-8; a++) {
     image.SetPixel(a, image.Height() - 7, val);
     val = !val;
-    set_pixels.SetPixel(a, image.Height() - 7, val);
+    set_pixels.SetPixel(a, image.Height() - 7, true);
   }
   val = true;
   for (size_t b=6; b<image.Height()-8; b++) {
@@ -291,7 +305,7 @@ void QR::drawFunctionPatterns(Image<bool>& image, Image<bool>& set_pixels)
   // mark the reserved areas
   if (version_ < 7) {
     drawVLine(0, 7, 8, false);
-    drawHLine(image.Width() - 7, 7, image.Height() - 9, false);
+    drawHLine(image.Width() - 8, 8, image.Height() - 9, false);
     drawHLine(0, 6, image.Height() - 9, false);
     drawHLine(7, 2, image.Height() - 9, false);
     drawVLine(image.Height() - 6, 6, 8, false);
@@ -307,7 +321,184 @@ void QR::drawFunctionPatterns(Image<bool>& image, Image<bool>& set_pixels)
   
   return;
 }
+
+void QR::drawEncodedData(Image<bool>& image, Image<bool>& set_pixels) const {
+  int x = image.Width() - 1, y = 0, count = 0;
+  bool up = true;
+  for (size_t w=0; w<encoded_data_.size(); w++) {
+    std::string byte = encoded_data_[w].getString();
+    for (size_t b=0; b<byte.size(); b++) {
+      image.SetPixel(x, y, byte[b] == '1');
+      // advance to the next available pixel
+      do {
+        if ((x % 2 == 0 && x > 6) || (x % 2 == 1 && x < 6)) {
+          x--;
+        } else if (up) {
+          x++;
+          y++;
+        } else {
+          x++;
+          y--;
+        }
+        if (y >= image.Height()) {
+          x -= 2;
+          // skip the timing pattern column
+          if (x == 6)
+            x--;
+          y = image.Height() - 1;
+          up = false;
+        } else if (y < 0) {
+          x -= 2;
+          y = 0;
+          up = true;
+        }
+      } while (x >= 0 && y >= 0 && set_pixels.GetPixel(x,y));
+    }
+  }
+  return;
+}
+
+void QR::applyMaskPattern(Image<bool>& image, const Image<bool>& set_pixels) 
+    const {
   
+  size_t min_p = -1,
+         min_index = 0;
+  for (size_t i=0; i<MASKS_.size(); i++) {
+    Image<bool> masked = image;
+    for (size_t x=0; x<masked.Width(); x++) {
+      for (size_t y=0; y<masked.Height(); y++) {
+        if (!set_pixels.GetPixel(x,y) && MASKS_[i](x, y)) {
+          masked.SetPixel(x, y, !masked.GetPixel(x, y));
+        }
+      }
+    }
+    size_t p = calculatePenalty(masked);
+    std::cout << p << std::endl;
+    if (p < min_p) {
+      min_p = p;
+      min_index = i;
+    }
+  }
+  
+  for (size_t x=0; x<image.Width(); x++) {
+    for (size_t y=0; y>image.Height(); y++) {
+      if (!set_pixels.GetPixel(x,y) && MASKS_[min_index](x, y)) {
+        image.SetPixel(x, y, !image.GetPixel(x, y));
+      }
+    }
+  }
+  
+  return;
+}
+
+size_t QR::calculatePenalty(const Image<bool>& image) const {
+  size_t penalty = 0;
+  // evaluation condition 1: consecutive like modules of >=5
+  size_t streak = 0;
+  bool last = image.GetPixel(0,0);
+  for (size_t y=0; y<image.Height(); y++) {
+    for (size_t x=0; x<image.Width(); x++) {
+      if (x == 0) {
+        streak = 1;
+        last = image.GetPixel(x, y);
+      } else if (image.GetPixel(x, y) == last) {
+        streak++;
+        if (x == image.Width() - 1 && streak >= 5) {
+          penalty += (3 + (streak - 5));          
+        }
+      } else {
+        if (streak >= 5) {
+          penalty += (3 + (streak - 5));
+        }
+        streak = 1;
+        last = !last;
+      }
+    }
+  }
+  for (size_t x=0; x<image.Width(); x++) {
+    for (size_t y=0; y<image.Height(); y++) {
+      if (y == 0) {
+        streak = 1;
+        last = image.GetPixel(x, y);
+      } else if (image.GetPixel(x, y) == last) {
+        streak++;
+        if (y == image.Height() - 1 && streak >= 5) {
+          penalty += (3 + (streak - 5));          
+        }
+      } else {
+        if (streak >= 5) {
+          penalty += (3 + (streak - 5));
+        }
+        streak = 1;
+        last = !last;
+      }
+    }
+  }
+  // evaluation condition 2: areas of at least 2x2
+  for (size_t x=0; x<image.Width()-1; x++) {
+    for (size_t y=0; y<image.Height()-1; y++) {
+      bool val = image.GetPixel(x,y); 
+      if (image.GetPixel(x+1,y) == val &&
+          image.GetPixel(x,y+1) == val &&
+          image.GetPixel(x+1,y+1) == val) {
+        penalty += 3;
+      }
+    }
+  }
+  // evaluation condition 3: check for the two bad patterns
+  for (size_t x=0; x<image.Width(); x++) {
+    for (size_t y=0; y<image.Height(); y++) {
+      size_t i = 0;
+      if (x < image.Width() - BAD_PATTERN_0_.size() + 1) {
+        while (i < BAD_PATTERN_0_.size() &&
+          image.GetPixel(x+i,y) == BAD_PATTERN_0_[i]) i++;
+        if (i == BAD_PATTERN_0_.size()) {
+          penalty += 40;
+        }
+      }
+      i = 0;
+      if (y < image.Height() - BAD_PATTERN_0_.size() + 1) {
+        while (i < BAD_PATTERN_0_.size() &&
+          image.GetPixel(x,y+i) == BAD_PATTERN_0_[i]) i++;
+        if (i == BAD_PATTERN_0_.size()) {
+          penalty += 40;
+        }
+      }
+      i = 0;
+      if (x < image.Width() - BAD_PATTERN_1_.size() + 1) {
+        while (i < BAD_PATTERN_1_.size() &&
+          image.GetPixel(x+i,y) == BAD_PATTERN_1_[i]) i++;
+        if (i == BAD_PATTERN_1_.size()) {
+          penalty += 40;
+        }
+      } 
+      i = 0;
+      if (y < image.Height() - BAD_PATTERN_1_.size() + 1) {
+        while (i < BAD_PATTERN_1_.size() &&
+          image.GetPixel(x,y+i) == BAD_PATTERN_1_[i]) i++;
+        if (i == BAD_PATTERN_1_.size()) {
+          penalty += 40;
+        }
+      }
+    }
+  }
+  // evaluation condition 4
+  size_t total_dark = 0;
+  for (size_t x=0; x<image.Width(); x++) {
+    for (size_t y=0; y<image.Height(); y++) {
+      if (image.GetPixel(x,y))
+        total_dark++;
+    }
+  }
+  size_t p_dark = double(total_dark) / (image.Width() * image.Height()) * 100,
+         p = p_dark % 5,
+         v1 = (50 - (p_dark - p)) / 5,
+         v2 = (50 - (p_dark + (5 - p))) / 5;
+  penalty += ( (v1 > v2 ? v1 : v2) * 10 );
+  
+  return penalty;
+}
+
  // ============================================================================
   
 size_t QR::getTotalCodewords() const {

@@ -38,15 +38,20 @@ namespace QRUnitTests
     qr1.Encode(a);
     qr1.Save("qr1.pbm");
     
-    QR qr2('Q', 2);
-    Alphanumeric b(m, 2);
-    qr2.Encode(b);
-    qr2.Save("qr2.pbm");
+    // QR qr2('Q', 1);
+    // Alphanumeric b(m, 1);
+    // qr2.Encode(b);
+    // qr2.Save("qr2.pbm");
     
-    QR qr3('Q', 8);
-    Alphanumeric c(m, 8);
-    qr3.Encode(c);
-    qr3.Save("qr3.pbm");
+    // QR qr3('Q', 2);
+    // Alphanumeric c(m, 2);
+    // qr3.Encode(c);
+    // qr3.Save("qr3.pbm");
+    
+    // QR qr4('Q', 8);
+    // Alphanumeric d(m, 8);
+    // qr4.Encode(d);
+    // qr4.Save("qr4.pbm");
     
     return 0;
   }

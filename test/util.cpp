@@ -8,6 +8,7 @@ namespace UtilUnitTest
     runBinary();
     runGaloisField();
     runHelpers();
+    runConversion();
     return 0;
   }
 
@@ -193,6 +194,18 @@ namespace UtilUnitTest
       << "x^" << cn+rn-i-2 << (i < cn+rn-2 ? " + " : ")");
     std::cout << std::endl;
 
+    return 0;
+  }
+
+  size_t runConversion() {
+    std::cout << "=> Image Conversion Tests:" << std::endl;
+    util:: convertToJPG("test/assets/qr1.pbm", "qr1.jpg");
+    if( util::fileExists("qr1.jpg") ) { 
+      std::cout << "Successfully Made qr1.jpg" << std::endl;
+      std::remove("qr1.jpg");
+    } else { 
+      std::cout << "Failed to Convert Image" << std::endl;
+    }
     return 0;
   }
 

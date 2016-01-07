@@ -1,4 +1,6 @@
 #include "util.h"
+#include <stdlib.h>
+#include <fstream>
 
 namespace util
 {
@@ -163,5 +165,19 @@ namespace util
   GF_int operator+(const GF_int& a, const GF_int& b) {
     return a ^ b;
   }
+
+  bool fileExists(const std::string& filename) {
+    std::ifstream ifile(filename.c_str());
+    return ifile;
+  }  
+  
+  bool convertToJPG(const std::string& filename, const std::string& destination) {
+    std::string command = "convert ";
+    command += filename;
+    command += " ";
+    command += destination;
+    std::system(command.c_str() );
+    return fileExists(destination);
+  } 
 
 }

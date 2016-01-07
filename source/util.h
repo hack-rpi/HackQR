@@ -106,6 +106,9 @@ namespace util
 
     return result;
   }
+  
+  bool fileExists(const std::string& filename);
+  bool convertToJPG(const std::string& filename, const std::string& destination);
 
 }
 #endif

@@ -108,7 +108,8 @@ namespace util
   }
   
   bool fileExists(const std::string& filename);
-  bool convertToJPG(const std::string& filename, const std::string& destination);
+  bool imageConvert(const std::string& filename, const std::string& destination);
+  bool containsValidCharacters(const std::string& target);
 
 }
 #endif

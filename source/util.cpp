@@ -166,15 +166,45 @@ namespace util
     return a ^ b;
   }
 
+  // ===========================================================================
+  // Image Conversion Tools
   bool fileExists(const std::string& filename) {
     std::ifstream ifile(filename.c_str());
     return ifile;
+  }
+
+  bool containsValidCharacters(const std::string& target) {
+    std::string validChars = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_./";
+    bool flag = false;
+    for(int i = 0; i < target.length(); i++) {
+      for(int j = 0; j < validChars.length() && !flag; j++){
+        if(target[i] == validChars[j]) {
+          flag = true;
+        }
+      }
+
+      if(!flag) {
+        return false;
+      }
+      flag = false;
+
+    }
+    return true; 
   }  
   
-  bool convertToJPG(const std::string& filename, const std::string& destination) {
+  bool imageConvert(const std::string& filename, const std::string& destination) {
+    if(!fileExists(filename)) {
+      throw "Unable to Find File: " + filename;
+    }
     std::string command = "convert ";
+    if(!containsValidCharacters(filename) ) {
+      throw "Invalid Character in: " + filename;
+    }
     command += filename;
     command += " ";
+    if(!containsValidCharacters(destination) ) {
+      throw "Invalid Character in: " + destination;
+    }
     command += destination;
     std::system(command.c_str() );
     return fileExists(destination);

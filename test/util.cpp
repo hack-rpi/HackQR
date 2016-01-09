@@ -199,12 +199,19 @@ namespace UtilUnitTest
 
   size_t runConversion() {
     std::cout << "=> Image Conversion Tests:" << std::endl;
-    util:: convertToJPG("test/assets/qr1.pbm", "qr1.jpg");
+     
+    util::imageConvert("test/assets/qr1.pbm", "qr1.jpg");
     if( util::fileExists("qr1.jpg") ) { 
       std::cout << "Successfully Made qr1.jpg" << std::endl;
       std::remove("qr1.jpg");
     } else { 
       std::cout << "Failed to Convert Image" << std::endl;
+    }
+
+    try {
+      util::imageConvert("test/assets/qr1.pbm", "qr1.jpg && mkdir testBadInput");
+    } catch(...) {
+      std::cout << "Successfully Caught Bad Input" << std::endl;
     }
     return 0;
   }

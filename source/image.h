@@ -93,6 +93,8 @@ public:
     delete [] data;
     data = newData; }
 
+  void addPadding(const size_t borderWidth);
+
   // ===========
   // LOAD & SAVE
   bool Load(const std::string &filename);

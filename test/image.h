@@ -9,7 +9,8 @@ namespace ImageUnitTests
 {
 
   extern size_t runAll();
-  extern size_t runExpansion();  
+  extern size_t runAugmentation();
+  
 }
 
 #endif 

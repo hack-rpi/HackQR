@@ -77,6 +77,25 @@ bool Image<Color>::Load(const std::string &filename) {
   return true;
 }
 
+template <>
+void Image<Color>::addPadding(const size_t borderWidth) {
+  int newWidth = width + 2*borderWidth;
+  int newHeight = height + 2*borderWidth;
+  Color* newData = new Color[newWidth*newHeight];
+  for(int i = 0; i < newWidth*newHeight; i++) {
+    newData[i] = Color();
+  }
+  for(int x = 0; x < width; x++) {
+    for(int y = 0; y < height; y++) {
+      newData[(y+borderWidth)*newWidth + x + borderWidth] = data[y*width + x];
+    }
+  }
+  delete [] data;
+  width = newWidth;
+  height = newHeight;
+  data = newData;
+}
+
 // ====================================================================
 // EXPLICIT SPECIALIZATIONS for bool images (.pbm)
 // ====================================================================
@@ -204,4 +223,23 @@ bool Image<bool>::Load(const std::string &filename) {
   fclose(file);
   delete [] packedData;
   return true;
+}
+
+template <>
+void Image<bool>::addPadding(const size_t borderWidth) {
+  int newWidth = width + 2*borderWidth;
+  int newHeight = height + 2*borderWidth;
+  bool *newData = new bool[newWidth*newHeight];
+  for(int i = 0; i < newWidth*newHeight; i++) {
+    newData[i] = false;
+  }
+  for(int x = 0; x < width; x++) {
+    for(int y = 0; y < height; y++) {
+      newData[(y+borderWidth)*newWidth + x + borderWidth] = data[y*width + x];
+    }
+  }
+  delete [] data;
+  width = newWidth;
+  height = newHeight;
+  data = newData;
 }

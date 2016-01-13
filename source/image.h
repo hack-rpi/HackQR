@@ -32,14 +32,14 @@ public:
   // ========================
   // CONSTRUCTOR & DESTRUCTOR
   Image() : width(0), height(0), data(NULL) {}
-  Image(const Image &image) : data(NULL) { 
+  Image(const Image &image) : data(NULL) {
     copy_helper(image); }
-  const Image& operator=(const Image &image) { 
+  const Image& operator=(const Image &image) {
     if (this != &image)
       copy_helper(image);
     return *this; }
   ~Image() {
-    delete [] data; 
+    delete [] data;
   }
 
   // initialize an image of a specific size
@@ -51,7 +51,7 @@ public:
       data = NULL;
     } else {
       assert (width > 0 && height > 0);
-      data = new T[width*height]; 
+      data = new T[width*height];
     }
   }
 
@@ -74,11 +74,30 @@ public:
     assert(y >= 0 && y < height);
     data[y*width + x] = value; }
 
+  void expandImage(const size_t ratio) {
+    int newWidth = width*ratio;
+    int newHeight = height*ratio;
+    T *newData = new T[newWidth*newHeight];
+    for(int i = 0; i < width; i++) {
+      for(int j = 0; j < height; j++) {
+        T target = GetPixel(i, j);
+        for(int r1 = 0; r1 < ratio; r1++) {
+          for(int r2 = 0; r2 < ratio; r2++) {
+            newData[(j*ratio+r1)*newWidth + i*ratio + r2] = target;
+          }
+        }
+      }
+    }
+    width = newWidth;
+    height = newHeight;
+    delete [] data;
+    data = newData; }
+
   // ===========
   // LOAD & SAVE
   bool Load(const std::string &filename);
-  bool Save(const std::string &filename) const; 
-  
+  bool Save(const std::string &filename) const;
+
 private:
   // private helper function
   void copy_helper(const Image &image) {
